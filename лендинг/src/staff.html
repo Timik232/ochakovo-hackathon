@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#D50032">
+<meta name="robots" content="noindex">
+<title>Анкета от сотрудника · Очаково</title>
+<link rel="icon" href="https://ochakovo.ru/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="app.css">
+<style>
+.wrap{max-width:1000px;margin:0 auto;padding:28px 16px 64px}
+.head{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justify-content:space-between;margin-bottom:24px}
+.head h1{font-size:clamp(30px,5vw,48px)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+.card{padding:24px}
+.card h2{font-size:18px;font-weight:900;text-transform:uppercase;margin:0 0 16px;display:flex;gap:10px;align-items:center}
+.card h2::before{content:"";width:14px;height:14px;background:var(--red);border:2px solid var(--ink);border-radius:50%}
+.card+.card{margin-top:24px}
+.hr{position:sticky;top:16px;background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:6px 6px 0 var(--red)}
+.hr h2::before{border-color:#fff}
+.hr .field>span{color:#fff}
+.hr .field input,.hr .field select,.hr .field textarea{border-color:#fff;color:var(--ink)}
+.hr .chip span{border-color:#fff;background:transparent;color:#fff}
+.hr .chip input:checked+span{background:var(--red);border-color:#fff}
+.hr .stack{display:flex;flex-direction:column;gap:16px}
+.stars{display:flex;gap:4px}
+.stars button{width:40px;height:40px;border:0;background:none;cursor:pointer;padding:0;font-size:32px;line-height:1;color:#5b5c60}
+.stars button.on{color:var(--amber)}
+.hot{display:flex;gap:10px;align-items:center;font-weight:800;cursor:pointer}
+.hot input{width:22px;height:22px;accent-color:var(--red)}
+select.vacsel{font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+@media (max-width:860px){.layout{grid-template-columns:1fr}.hr{position:static}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="head">
+    <div><p class="kicker">Стенд «Очаково» · ввод сотрудником</p><h1 class="comic">Новый <span class="r">кандидат</span></h1></div>
+    <p class="muted" style="max-width:360px;margin:0">Для тех, кто подошёл к стенду, но не заполнил анкету сам: внеси данные и оставь заметку для HR.</p>
+  </div>
+  <form id="form" novalidate class="layout">
+    <div>
+      <section class="card">
+        <h2>Кандидат</h2>
+        <div class="grid">${PERSON}</div>
+      </section>
+      <section class="card">
+        <h2>Вакансия и пожелания</h2>
+        <div class="grid">
+          <label class="field wide"><span>Вакансия</span><select name="vacancy_id" class="vacsel" id="vacsel"><option value="">— не определился —</option></select></label>
+          ${WISH}
+        </div>
+      </section>
+    </div>
+    <aside class="card hr">
+      <h2>Для HR</h2>
+      <div class="stack">
+        <label class="field"><span>Мероприятие</span><input name="event" id="event" maxlength="120" placeholder="Ярмарка вакансий МГУПП"></label>
+        <label class="field"><span>Кто заполнил</span><input name="staff_name" id="staffName" maxlength="80" placeholder="Ваше имя"></label>
+        <div class="field"><span>Впечатление</span><div class="stars" id="stars"></div><input type="hidden" name="rating" value="0"></div>
+        <label class="hot"><input type="checkbox" name="hot"> Горячий кандидат — звонить первым</label>
+        <label class="field"><span>Этап</span><select name="stage" id="stage"></select></label>
+        <label class="field"><span>Следующий шаг</span><input name="next_step" maxlength="300" placeholder="Позвонить в понедельник, пригласить на экскурсию"></label>
+        <label class="field"><span>Комментарий</span><textarea name="comment" maxlength="4000" placeholder="Что запомнилось, договорённости, вопросы кандидата"></textarea></label>
+        <div class="actions">
+          <button class="btn" id="save">Сохранить</button>
+          <button class="btn white sm" type="reset">Очистить</button>
+        </div>
+      </div>
+    </aside>
+  </form>
+</main>
+<script src="sample.js"></script>
+<script src="demo.js"></script>
+<script src="app.js"></script>
+<script src="staff.js"></script>
+<script>
+'use strict';
+const form = $('#form');
+form.innerHTML = form.innerHTML.replace('${PERSON}', personFields({ staff: true })).replace('${WISH}', wishFields());
+wireForm(form);
+$('#stars').innerHTML = [1, 2, 3, 4, 5].map(i => `<button type="button" data-v="${i}" aria-label="${i} из 5">★</button>`).join('');
+$('#stage').innerHTML = STAGES.map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+// Мероприятие и имя сотрудника помним между анкетами: на стенде они не меняются весь день.
+$('#event').value = store.get('ochakovo.event', '');
+$('#staffName').value = store.get('ochakovo.staff', '');
+
+function setRating(v) { form.rating.value = v; $$('#stars button').forEach(b => b.classList.toggle('on', +b.dataset.v <= v)); }
+$('#stars').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setRating(+form.rating.value === +b.dataset.v ? 0 : +b.dataset.v); });
+form.addEventListener('reset', () => setTimeout(() => { setRating(0); showErrors(form, {}); $('#event').value = store.get('ochakovo.event', ''); $('#staffName').value = store.get('ochakovo.staff', ''); }));
+
+requireStaff('staff').then(async () => {
+  const vacs = await api('GET', '/api/vacancies').catch(() => []);
+  $('#vacsel').insertAdjacentHTML('beforeend', vacs.map(v => `<option value="${esc(v.id)}">${esc(v.title)}</option>`).join(''));
+});
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const d = formData(form);
+  const errs = validate(d, { staff: true });
+  if (Object.keys(errs).length) return showErrors(form, errs);
+  store.set('ochakovo.event', d.event); store.set('ochakovo.staff', d.staff_name);
+  const btn = $('#save'); btn.disabled = true;
+  try {
+    await api('POST', '/api/staff/candidates', d);
+    toast(`${fullName(d)} — в базе`);
+    form.reset(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err) {
+    if (err.status === 401) location.reload();
+    else if (Object.keys(err.fields).length) showErrors(form, err.fields);
+    else toast(err.message);
+  } finally { btn.disabled = false; }
+});
+</script>
+</body>
+</html>

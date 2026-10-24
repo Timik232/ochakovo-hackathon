@@ -1,0 +1,17 @@
+<body>
+<div class="app">
+  <header class="bar">
+    <img id="logo" alt="Очаково">
+    <div class="hud">
+      <div><span class="k">Смена</span><span class="v" id="hClock">08:00</span></div>
+      <div><span class="k">Терпение</span><span class="meter" aria-hidden="true"><i id="hPat" style="width:100%"></i></span></div>
+      <div><span class="k">Премия</span><span class="v" id="hBonus">0 ₽</span></div>
+      <button class="mute" id="mute" type="button" aria-pressed="false">Звук вкл</button>
+    </div>
+  </header>
+  <section class="stage" id="stage">
+    <canvas id="cv" width="540" height="960" aria-label="Игровое поле"></canvas>
+    <div id="ov" hidden></div>
+  </section>
+  <section id="final" hidden></section>
+</div>

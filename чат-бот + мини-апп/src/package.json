@@ -1,0 +1,9 @@
+{
+  "name": "ochakovo-zavodchanin-tma",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Симулятор заводчанина — Telegram Mini App завода «Очаково»",
+  "main": "server.js",
+  "engines": { "node": ">=18" },
+  "scripts": { "start": "node server.js", "build": "python3 build.py", "test": "python3 build.py && node tests/run.js" }
+}

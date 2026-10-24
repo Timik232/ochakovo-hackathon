@@ -1,0 +1,49 @@
+services:
+  vault-agent:
+    image: hashicorp/vault:2.0.4
+    container_name: ochakovo-vault-agent
+    restart: unless-stopped
+    user: "0:0"
+    command: agent -config=/vault/agent.hcl -log-level=info
+    environment:
+      SKIP_SETCAP: "1"
+      VAULT_ADDR: http://vault:8200
+      HOME: /tmp
+    volumes:
+      - ./vault/agent.hcl:/vault/agent.hcl:ro
+      - ./vault/secrets.env.tmpl:/vault/secrets.env.tmpl:ro
+      - ./vault/role-id:/vault/role-id:ro
+      - ./vault/secret-id:/vault/secret-id:ro
+      - ./vault/secrets:/etc/vault
+    networks:
+      - secrets-net
+
+  ochakovo-miniapp:
+    build: .
+    image: ochakovo-miniapp:local
+    container_name: ochakovo-miniapp
+    restart: unless-stopped
+    env_file: .env
+    user: "1000:1000"
+    environment:
+      # Node fetch ходит в api.telegram.org через mihomo на .48 (напрямую API недоступен)
+      NODE_USE_ENV_PROXY: "1"
+      HTTP_PROXY: http://192.168.1.48:7890
+      HTTPS_PROXY: http://192.168.1.48:7890
+      NO_PROXY: localhost,127.0.0.1
+    ports:
+      - "192.168.1.48:8480:8080"
+    volumes:
+      - ./data:/app/data
+      - ./vault/secrets:/etc/vault:ro
+    depends_on:
+      - vault-agent
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  secrets-net:
+    external: true
