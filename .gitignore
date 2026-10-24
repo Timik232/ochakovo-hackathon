@@ -1,0 +1,26 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# JavaScript / frontend
+**/node_modules/
+**/.next/
+**/.nuxt/
+**/dist/
+**/build/
+**/coverage/
+
+# Python
+**/.venv/
+**/__pycache__/
+*.py[cod]
+
+# Editor, OS and logs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
