@@ -1,20 +1,79 @@
-# Очаково — Кадровый журнал
+# Очаково — система приёма кандидатов
 
-Самостоятельное приложение учёта кандидатов: публичная анкета, рабочий кабинет
-сотрудников, единый реестр кандидатов, администрирование допуска.
+HR-система для приёма кандидатов на работу в «Очаково». Кандидат заполняет публичную анкету и получает статус «анкета», а сотрудник ведёт кандидата в рабочем кабинете с внутренними полями. Реестр поддерживает поиск, фильтры и этапы; предусмотрены роли staff/admin, архив, экспорт CSV и QR-код.
 
-Монорепозиторий:
+## Стек
 
-| Каталог | Что внутри |
-|---|---|
-| `backend/` | FastAPI + SQLAlchemy 2 (sync) + PostgreSQL 17, Python 3.12 (uv), Alembic, ruff, mypy, pytest |
-| `frontend/` | React 19 + TypeScript strict + Vite, React Router 7 (declarative), TanStack Query 5, React Hook Form + Zod 4, CSS Modules, ESLint + Prettier, Vitest + Testing Library + MSW |
-| `deploy/` | Docker Compose (prod/test/demo), nginx-конфиг, maintenance-скрипты, `.env.example` |
-| `docs/` | `architecture.md` — архитектура, `api.md` — контракты API, `operations.md`, `backup-restore.md`, `privacy-activation.md` |
-| `e2e/` | Спецификации Playwright (полный стек подключается в T11) |
+- **Backend:** FastAPI, SQLAlchemy 2, psycopg 3, Alembic, PostgreSQL 17.
+- **Frontend:** React 19, TypeScript, Vite, TanStack Query, React Hook Form, Zod.
+- **Проверки:** pytest, Vitest, Playwright; `make verify` объединяет lint, проверки типов и unit/integration-тесты.
 
-Контракт API генерируется из кода backend: `backend/openapi.json` →
-`frontend/src/api/schema.d.ts` (openapi-typescript). Дрейф ловит `npm run api:check`.
+## Быстрый старт
+
+Нужны Docker с Compose и доступ к интернету для загрузки базовых образов и зависимостей.
+
+1. Создайте локальный файл настроек и задайте значения секретов по комментариям в нём:
+
+   ```bash
+   cp deploy/.env.example deploy/.env
+   ```
+
+   Как минимум замените `POSTGRES_PASSWORD`, задайте такой же пароль в `DATABASE_URL` и укажите случайное значение `SUBMISSION_HMAC_SECRET` длиной не менее 32 байт. Для локального HTTP-запуска задайте `APP_ORIGIN=http://localhost:18120` и `COOKIE_SECURE=false`.
+
+2. Соберите образы из корня репозитория. Для frontend корень — обязательный build context: Dockerfile использует `backend/openapi.json`.
+
+   ```bash
+   docker build -f backend/Dockerfile -t ochakovo-candidates-api:local backend
+   docker build -f frontend/Dockerfile -t ochakovo-candidates-web:local .
+   ```
+
+3. Compose-файл по умолчанию ссылается на релизные образы. Для локальных образов создайте временный Compose override (он не меняет файлы проекта), затем запустите сервисы:
+
+   ```bash
+   cat > /tmp/ochakovo-local-images.yml <<'YAML'
+   services:
+     api:
+       image: ochakovo-candidates-api:local
+     migrate:
+       image: ochakovo-candidates-api:local
+     maintenance:
+       image: ochakovo-candidates-api:local
+     web:
+       image: ochakovo-candidates-web:local
+   YAML
+
+   docker compose -f deploy/docker-compose.yml -f /tmp/ochakovo-local-images.yml \
+     --env-file deploy/.env up -d
+   ```
+
+   Сервис `migrate` автоматически выполняет миграции до запуска API. Веб-приложение будет доступно по адресу `http://localhost:${INGRESS_PORT:-18120}` (по умолчанию — `http://localhost:18120`).
+
+## Первый вход
+
+Создайте первого администратора интерактивно:
+
+```bash
+docker compose -f deploy/docker-compose.yml -f /tmp/ochakovo-local-images.yml \
+  --env-file deploy/.env exec -it api python -m app.cli bootstrap-admin
+```
+
+Активация приёма анкет требует заполненной политики конфиденциальности и подтверждения полномочий оператора. Для локального демонстрационного окружения выполните команду в контейнере API:
+
+```bash
+docker compose -f deploy/docker-compose.yml -f /tmp/ochakovo-local-images.yml \
+  --env-file deploy/.env exec -e APP_ENV=development \
+  -e APP_ORIGIN=http://localhost:18120 -e COOKIE_SECURE=false \
+  -it api python -m app.cli privacy-activate
+```
+
+Следуйте интерактивным запросам CLI; не включайте приём реальных персональных данных без надлежащих оснований и настроенной политики.
+
+## Тесты и проверки
+
+- `make verify` — полная проверка backend и frontend без E2E; цель поднимает тестовую PostgreSQL и удаляет её после завершения.
+- `cd backend && uv run pytest` — тесты backend (для полного набора требуется тестовая база; `make test-up` поднимает её, `make test-down` останавливает).
+- `cd frontend && npm ci && npm run test:run` — тесты frontend через Vitest.
+- Playwright E2E запускаются целью `make test-e2e`.
 
 ## Скриншоты
 
@@ -27,82 +86,10 @@
 | Рабочий кабинет сотрудника (1440px) | [`docs/screenshots/task-parity-b-staff-1440.png`](docs/screenshots/task-parity-b-staff-1440.png) |
 | Реестр кандидатов со статус-бейджами | [`docs/screenshots/task-redeploy-r2-badges.png`](docs/screenshots/task-redeploy-r2-badges.png) |
 
-## Предварительные требования
+## Структура репозитория
 
-- `uv` >= 0.12
-- Node.js >= 22.12 и npm
-- Docker (образы Docker Hub идут через настроенное на хосте зеркало)
-
-## Быстрый старт
-
-### Тестовая база данных (одноразовый PostgreSQL 17)
-
-```bash
-make test-up    # postgres:17 в контейнере ochakovo-candidates-test-pg, 127.0.0.1:15432
-make test-down  # остановить и удалить контейнер
-```
-
-### Backend
-
-```bash
-cd backend
-uv sync --frozen
-uv run pytest
-```
-
-Dev-сервер (http://127.0.0.1:8000):
-
-```bash
-uv run uvicorn app.main:app --reload
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm ci
-npm run build
-```
-
-Dev-сервер (http://127.0.0.1:5173, `/api` проксируется на backend :8000):
-
-```bash
-npm run dev
-```
-
-### Полная проверка (lint + типы + unit/integration, без e2e)
-
-```bash
-make verify
-```
-
-`verify` сам поднимает тестовую БД и убирает её за собой.
-
-### Контракт API (OpenAPI → TypeScript)
-
-```bash
-cd backend  && uv run python -m scripts.export_openapi   # backend/openapi.json, БД не нужна
-cd frontend && npm run api:generate                      # src/api/schema.d.ts (хранится в репозитории)
-cd frontend && npm run api:check                         # ненулевой код при дрейфе
-```
-
-## Развёртывание (образы только через Jenkins)
-
-Упаковка: `deploy/docker-compose.yml`, отдельный тестовый проект
-`deploy/docker-compose.test.yml`, параметры `deploy/.env.example`.
-`make compose-config` проверяет оба файла без запуска/сборки.
-API Dockerfile использует context `backend`; frontend Dockerfile требует
-**корень репозитория** (OpenAPI из `backend/openapi.json`). На .48 ничего не
-собирать. После Jenkins: скопировать пример env в защищённый deploy/.env,
-выполнить capacity guard и команды из [operations.md](docs/operations.md).
-T11-B проверил отдельный HTTP test-stack, E2E, security и backup/restore.
-Production HTTPS/privacy gates и приёмка владельцем остаются в T12.
-
-`make compose-test-up/down` работает только с отдельным test-префиксом и
-loopback18121; это не make verify/test-up на15432. Передавайте
-`DEPLOY_ENV=deploy/.env.test`: только в test/development явный `COOKIE_SECURE=false`
-разрешает сессионные cookie по HTTP; production всегда принудительно Secure.
-`make backup-now` и
-`make restore-list` используют maintenance. Полная инструкция ключей и
-изолированного восстановления: [backup-restore.md](docs/backup-restore.md).
-**Никогда не выполнять production down -v.**
+- `backend/` — API, модели данных, миграции и CLI.
+- `frontend/` — веб-интерфейс.
+- `deploy/` — Compose-файлы, конфигурация веб-сервера и пример переменных окружения.
+- `docs/` — архитектура, API, эксплуатационные заметки и скриншоты.
+- `e2e/` — сценарии Playwright.
