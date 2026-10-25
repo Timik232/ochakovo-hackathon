@@ -27,22 +27,10 @@ HR-система для приёма кандидатов на работу в 
    docker build -f frontend/Dockerfile -t ochakovo-candidates-web:local .
    ```
 
-3. Compose-файл по умолчанию ссылается на релизные образы. Для локальных образов создайте временный Compose override (он не меняет файлы проекта), затем запустите сервисы:
+3. Compose-файл по умолчанию ссылается на релизные образы. Для локальных образов подключите идущий в репозитории override `deploy/docker-compose.local-images.yml`:
 
    ```bash
-   cat > /tmp/ochakovo-local-images.yml <<'YAML'
-   services:
-     api:
-       image: ochakovo-candidates-api:local
-     migrate:
-       image: ochakovo-candidates-api:local
-     maintenance:
-       image: ochakovo-candidates-api:local
-     web:
-       image: ochakovo-candidates-web:local
-   YAML
-
-   docker compose -f deploy/docker-compose.yml -f /tmp/ochakovo-local-images.yml \
+   docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local-images.yml \
      --env-file deploy/.env up -d
    ```
 
@@ -53,14 +41,14 @@ HR-система для приёма кандидатов на работу в 
 Создайте первого администратора интерактивно:
 
 ```bash
-docker compose -f deploy/docker-compose.yml -f /tmp/ochakovo-local-images.yml \
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local-images.yml \
   --env-file deploy/.env exec -it api python -m app.cli bootstrap-admin
 ```
 
 Активация приёма анкет требует заполненной политики конфиденциальности и подтверждения полномочий оператора. Для локального демонстрационного окружения выполните команду в контейнере API:
 
 ```bash
-docker compose -f deploy/docker-compose.yml -f /tmp/ochakovo-local-images.yml \
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local-images.yml \
   --env-file deploy/.env exec -e APP_ENV=development \
   -e APP_ORIGIN=http://localhost:18120 -e COOKIE_SECURE=false \
   -it api python -m app.cli privacy-activate

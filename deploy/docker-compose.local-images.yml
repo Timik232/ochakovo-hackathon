@@ -1,0 +1,15 @@
+# Локальный запуск без релизного registry: подменяет образы на локальные теги
+# из «Быстрого старта» README (ochakovo-candidates-api:local, ochakovo-candidates-web:local).
+#
+# Использование:
+#   docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local-images.yml \
+#     --env-file deploy/.env up -d
+services:
+  migrate:
+    image: ochakovo-candidates-api:local
+  api:
+    image: ochakovo-candidates-api:local
+  maintenance:
+    image: ochakovo-candidates-api:local
+  web:
+    image: ochakovo-candidates-web:local
