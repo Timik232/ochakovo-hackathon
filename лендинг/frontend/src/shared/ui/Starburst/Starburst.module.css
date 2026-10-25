@@ -1,0 +1,45 @@
+.burst {
+  position: relative;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 12% 14%;
+  filter: drop-shadow(8px 8px 0 var(--ink));
+}
+
+.burst::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  z-index: -1;
+  clip-path: polygon(
+    50% 0%, 56% 14%, 66% 3%, 68% 18%, 82% 8%, 78% 25%, 96% 20%, 86% 35%, 100% 42%, 88% 50%, 100% 60%,
+    85% 64%, 95% 80%, 78% 76%, 80% 94%, 66% 84%, 60% 100%, 52% 86%, 42% 98%, 38% 83%, 24% 94%, 25% 77%,
+    6% 82%, 16% 66%, 0% 58%, 13% 50%, 2% 38%, 17% 34%, 8% 18%, 26% 22%, 26% 6%, 40% 15%
+  );
+}
+
+.ink::before {
+  background: var(--ink);
+}
+
+.animated {
+  animation: burst-breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes burst-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated {
+    animation: none;
+  }
+}

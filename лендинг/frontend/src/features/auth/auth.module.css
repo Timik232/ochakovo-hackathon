@@ -1,0 +1,106 @@
+/* Экраны входа/регистрации/смены пароля: узкая карточка 430px из публичной линейки. */
+
+.hero {
+  position: relative;
+  padding: var(--space-2) 0 var(--space-5);
+}
+
+.heroHeading {
+  margin-bottom: var(--space-3);
+}
+
+.sub {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #4a4b4f;
+  max-width: 38ch;
+}
+
+.formCard {
+  position: relative;
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: var(--space-6) var(--space-5) var(--space-7);
+  display: grid;
+  gap: var(--space-5);
+}
+
+.notice {
+  min-width: 0;
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  border-top: 2px dashed var(--light);
+  padding-top: var(--space-4);
+}
+
+.link {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 3px solid var(--red);
+}
+
+.link:hover {
+  color: var(--red);
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.closedCard {
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: var(--space-6) var(--space-5);
+}
+
+.pendingWrap {
+  padding: var(--space-6) 0 var(--space-8);
+}
+
+.pendingCard {
+  position: relative;
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: var(--space-7) var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.pendingCard p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.55;
+  color: #4a4b4f;
+}
+
+.greeting {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #4a4b4f;
+}

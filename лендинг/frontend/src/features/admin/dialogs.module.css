@@ -1,0 +1,46 @@
+.passwordRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.passwordLabel {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.passwordInput {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: var(--border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--paper);
+  font: inherit;
+  font-family: monospace;
+  letter-spacing: 0.06em;
+}
+
+.passwordHint {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.issuedRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.issued {
+  padding: 10px 14px;
+  border: var(--border) dashed var(--ink);
+  border-radius: var(--r);
+  background: var(--green-wash);
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}

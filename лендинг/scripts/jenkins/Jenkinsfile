@@ -1,0 +1,72 @@
+pipeline {
+  agent { label 'built-in' }
+  parameters {
+    string(name: 'LOCAL_PATH', defaultValue: '/var/jenkins_home/builds/incoming/ochakovo-gate-snapshot.tar.gz', description: 'Snapshot archive on Jenkins host')
+  }
+  options { timestamps(); disableConcurrentBuilds(); timeout(time: 50, unit: 'MINUTES') }
+  stages {
+    stage('Unpack') {
+      steps {
+        script {
+          env.GATE_DIR = "${env.WORKSPACE}/ochakovo-gate-${env.BUILD_NUMBER}"
+          env.GATE_HOST_DIR = env.GATE_DIR.replace('/var/jenkins_home', '/DATA/AppData/jenkins/home')
+          sh 'mkdir -p "$GATE_DIR" && tar xzf "$LOCAL_PATH" -C "$GATE_DIR"'
+        }
+      }
+    }
+    stage('PostgreSQL 17') {
+      steps {
+        script {
+          env.PG_NAME = "ochakovo-gate-pg-${env.BUILD_NUMBER}"
+          sh 'docker run -d --name "$PG_NAME" -e POSTGRES_PASSWORD=test -p 127.0.0.1::5432 postgres:17 >/dev/null'
+          sh 'for i in $(seq 1 60); do docker exec "$PG_NAME" pg_isready -U postgres && exit 0; sleep 2; done; exit 1'
+          env.PG_PORT = sh(script: 'docker port "$PG_NAME" 5432/tcp | sed "s/.*://"', returnStdout: true).trim()
+        }
+      }
+    }
+    stage('Backend') {
+      steps {
+        script {
+          sh("docker run --rm --network host -v \"${env.GATE_HOST_DIR}/backend:/work\" -w /work -e UV_DEFAULT_INDEX=http://192.168.1.48:3141/root/pypi/+simple/ python:3.12-slim sh -c \"pip install uv && uv sync --frozen && uv run python -m scripts.export_openapi && uv run ruff check . && uv run mypy app && T2_DISPOSABLE_DB=yes DATABASE_URL=postgresql+psycopg://postgres:test@127.0.0.1:${env.PG_PORT}/postgres uv run alembic upgrade head && T2_DISPOSABLE_DB=yes DATABASE_URL=postgresql+psycopg://postgres:test@127.0.0.1:${env.PG_PORT}/postgres uv run pytest tests/ -q --junitxml=backend-junit.xml\"")
+          junit "ochakovo-gate-${env.BUILD_NUMBER}/backend/backend-junit.xml"
+          archiveArtifacts artifacts: "ochakovo-gate-${env.BUILD_NUMBER}/backend/backend-junit.xml", fingerprint: true
+        }
+      }
+    }
+    stage('Frontend') {
+      steps {
+        script {
+          sh("docker run --rm --network host -v \"${env.GATE_HOST_DIR}:/workspace\" -v /DATA/AppData/jenkins/home/.cache/ochakovo-npm:/root/.npm -w /workspace/frontend node:22.13.0-bookworm-slim sh -c \"npm config set registry https://npm-mirror.gitverse.ru && npm config set fetch-timeout 600000 && npm config set fetch-retries 5 && npm config set fetch-retry-mintimeout 30000 && npm config set fetch-retry-maxtimeout 300000 && npm ci --prefer-offline --no-audit --no-fund && npm run lint && npm run typecheck && npm run api:generate && npm run api:check && npm run test:run && npm run build\"")
+        }
+      }
+      post {
+        always {
+          junit testResults: "ochakovo-gate-${env.BUILD_NUMBER}/frontend/junit/vitest-junit.xml", allowEmptyResults: true
+          archiveArtifacts artifacts: "ochakovo-gate-${env.BUILD_NUMBER}/frontend/**/vitest-junit.xml", allowEmptyArchive: true, fingerprint: true
+        }
+      }
+    }
+    stage('Playwright') {
+      steps {
+        sh 'PLAYWRIGHT_JUNIT_OUTPUT_FILE="$GATE_DIR/e2e-junit.xml" bash "$GATE_DIR/scripts/jenkins/run-e2e.sh"'
+      }
+      post {
+        always {
+          junit testResults: "ochakovo-gate-${env.BUILD_NUMBER}/e2e-junit.xml", allowEmptyResults: false
+          archiveArtifacts artifacts: "ochakovo-gate-${env.BUILD_NUMBER}/e2e-evidence/**,ochakovo-gate-${env.BUILD_NUMBER}/e2e-junit.xml,ochakovo-gate-${env.BUILD_NUMBER}/test-results/**", allowEmptyArchive: true
+        }
+      }
+    }
+  }
+  post {
+    always {
+      script {
+        if (env.PG_NAME) { sh 'docker rm -f "$PG_NAME" >/dev/null 2>&1 || true' }
+        sh 'docker rm -f "ochakovo-gate-api-$BUILD_NUMBER" "ochakovo-gate-web-$BUILD_NUMBER" "ochakovo-gate-e2e-$BUILD_NUMBER" >/dev/null 2>&1 || true'
+        if (env.GATE_DIR) {
+          sh 'docker run --rm -v "$GATE_HOST_DIR:/gate" alpine:3 sh -c "find /gate -mindepth 1 -delete"'
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+# Separate file/project; never overlay the production file with -f twice.
+# DEMO stack: synthetic data only, LAN-open on 18121, wiped at cutover.
+# APP_ENV=test (not "demo"): the released images honor COOKIE_SECURE=false and
+# privacy-activate --allow-http-origin ONLY in test|development, while seed-demo
+# is allowed ONLY in demo|test. "test" is the single env satisfying all three
+# guards without code changes -> no rebuild (promotion only). See docs/operations.md.
+name: ochakovo-candidates-demo
+services:
+  db:
+    extends: {file: docker-compose.yml, service: db}
+    environment:
+      POSTGRES_DB: ochakovo_candidates_demo
+  migrate:
+    extends: {file: docker-compose.yml, service: migrate}
+    environment:
+      APP_ENV: test
+      DATABASE_URL: ${DEMO_DATABASE_URL:-postgresql+psycopg://ochakovo:CHANGE_ME@db:5432/ochakovo_candidates_demo}
+      APP_ORIGIN: http://192.168.1.48:18121
+  api:
+    extends: {file: docker-compose.yml, service: api}
+    environment:
+      APP_ENV: test
+      COOKIE_SECURE: 'false'
+      DATABASE_URL: ${DEMO_DATABASE_URL:-postgresql+psycopg://ochakovo:CHANGE_ME@db:5432/ochakovo_candidates_demo}
+      APP_ORIGIN: http://192.168.1.48:18121
+  web:
+    extends: {file: docker-compose.yml, service: web}
+    # !override prevents inherited production port from being merged.
+    # Intentionally LAN-open (0.0.0.0): owner opens http://192.168.1.48:18121 from LAN.
+    ports: !override ["0.0.0.0:18121:8080"]
+    environment: {ENABLE_HSTS: '0'}
+  maintenance:
+    extends: {file: docker-compose.yml, service: maintenance}
+    environment:
+      APP_ENV: test
+      DATABASE_URL: ${DEMO_DATABASE_URL:-postgresql+psycopg://ochakovo:CHANGE_ME@db:5432/ochakovo_candidates_demo}
+      PGDATABASE: ochakovo_candidates_demo
+    volumes: !override
+      - ./maintenance:/opt/maintenance:ro
+      - type: bind
+        source: ./backups-demo
+        target: /backups
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${PGPASS_HOST_FILE:-./secrets/pgpass-demo}
+        target: /run/secrets/pgpass
+        read_only: true
+        bind: {create_host_path: false}
+volumes:
+  pgdata: {name: ochakovo-candidates_pgdata-demo}
+networks:
+  internal: {internal: true}
+  edge: {}

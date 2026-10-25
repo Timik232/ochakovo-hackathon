@@ -1,0 +1,70 @@
+/*
+ * Дизайн-токены кампании «Влейся в команду».
+ * Единственный источник значений — прототип v4 (ochakovo-career/public/app.css :root).
+ * Менять значения можно только синхронно с docs/design.md.
+ */
+:root {
+  /* Палитра */
+  --red: #d50032;
+  --red-dk: #a80027;
+  --red-hover: #ed1446; /* скроллбар hover из v4 */
+  --ink: #2b2b2e;
+  --grey: #a7a9ac;
+  --light: #e9eaeb;
+  --paper: #ffffff;
+  --green: #3e9b2e;
+  --amber: #f2a900;
+
+  /* Тонированные подложки алертов (производные палитры, см. design.md) */
+  --red-wash: #fff2f5;
+  --amber-wash: #fff4d6;
+  --green-wash: #f0f7ee;
+
+  /* Типографика: Proxima Nova не распространяется (лицензия), поэтому
+     self-hosted Montserrat + системный fallback — как в стеке v4 после Montserrat. */
+  --f: "Montserrat", Arial, sans-serif;
+
+  /* Жёсткие комикс-тени (без blur) */
+  --shadow: 6px 6px 0 var(--ink); /* карточки, панели */
+  --shadow-sm: 4px 4px 0 var(--ink); /* кнопки, баблы */
+  --shadow-xs: 3px 3px 0 var(--ink); /* мелкие элементы */
+
+  /* Радиусы: 4px — базовый, 999px — «пилюля» тегов/этапов, 22px — бабл */
+  --r: 4px;
+  --r-pill: 999px;
+  --r-bubble: 22px;
+
+  /* Контуры */
+  --border-w: 3px;
+  --border-w-sm: 2px;
+  --border: var(--border-w) solid var(--ink);
+  --border-sm: var(--border-w-sm) solid var(--ink);
+
+  /* Шкала отступов, шаг 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Фокус: янтарная обводка поверх любого фона (как :focus-visible в v4) */
+  --focus-outline: 3px solid var(--amber);
+  --focus-offset: 2px;
+
+  /* Слои: заголовок → диалог → тост (значения v4: .ask=98, .toast=99) */
+  --z-header: 20;
+  --z-dialog: 98;
+  --z-toast: 99;
+
+  /* Ширины контента */
+  --w-public: 430px; /* публичная анкета */
+  --w-staff: 1440px; /* рабочий кабинет */
+  --w-min: 360px; /* минимальная ширина без горизонтального скролла */
+
+  color-scheme: light;
+}

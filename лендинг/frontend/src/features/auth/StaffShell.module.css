@@ -1,0 +1,14 @@
+.session {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.who {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--paper);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
