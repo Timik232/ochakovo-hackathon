@@ -1,0 +1,85 @@
+/*
+ * База: box-sizing, скроллбар, выделение, reduced-motion.
+ * Копирует v4 app.css: красный «бегунок» с графитовой обводкой, красное выделение.
+ * Это единственные глобальные стили помимо tokens/fonts — всё остальное в CSS Modules.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--red) var(--light);
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--light);
+  border-left: 3px solid var(--ink);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--red);
+  border: 3px solid var(--ink);
+  border-radius: 99px;
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.18);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red-hover);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--red-dk);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--light);
+}
+
+::selection {
+  background: var(--red);
+  color: #fff;
+}
+
+body {
+  margin: 0;
+  font: 500 16px/1.45 var(--f);
+  color: var(--ink);
+  background: var(--light);
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--red);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

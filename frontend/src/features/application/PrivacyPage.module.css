@@ -1,0 +1,48 @@
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-10) 0;
+}
+
+.card {
+  margin-top: var(--space-6);
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: var(--space-6) var(--space-5);
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.revision {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b6d71;
+}
+
+.block + .block {
+  margin-top: var(--space-5);
+  border-top: 3px dashed var(--light);
+  padding-top: var(--space-5);
+}
+
+.text {
+  margin: var(--space-2) 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #3c3d41;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.retry {
+  margin-top: var(--space-3);
+}

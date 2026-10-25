@@ -1,0 +1,44 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+test-results/
+playwright-report/
+blob-report/
+junit/
+deploy/backups/
+deploy/backups-test/
+deploy/secrets/
+deploy/secrets-test/
+*.dump.age
+
+# Deploy private material: secrets, backups, per-env dotenvs (F4-03).
+# Exact + glob forms; .env.example stays tracked via the negation above and below.
+deploy/secrets*/
+deploy/backups*/
+deploy/.env
+deploy/.env.test
+deploy/.env.demo
+!deploy/.env.example
+
+# Key/credential material — never track any of it.
+*.age
+*.key
+age-identity*
+pgpass*
+
+# Local agent/plan artifacts, never part of the published repo.
+.sisyphus/
+evidence/

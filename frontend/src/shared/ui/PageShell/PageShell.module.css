@@ -1,0 +1,139 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.skip {
+  position: absolute;
+  left: var(--space-3);
+  top: calc(-1 * var(--space-12));
+  z-index: var(--z-toast);
+  background: #fff;
+  color: var(--ink);
+  border: var(--border-sm);
+  border-radius: var(--r);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 800;
+  font-size: 13px;
+  text-decoration: none;
+  transition: top 0.15s;
+}
+
+.skip:focus {
+  top: var(--space-3);
+}
+
+.header {
+  position: relative;
+  z-index: var(--z-header);
+  background: var(--red);
+  border-bottom: var(--border);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.staff .top {
+  max-width: var(--w-staff);
+}
+
+.public .top {
+  max-width: var(--w-public);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  font-size: 15px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.brand:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}
+
+.brandAlt {
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.brandSlash {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 700;
+}
+
+.navSlot {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-16);
+}
+
+.staffMain {
+  max-width: var(--w-staff);
+}
+
+.publicMain {
+  max-width: var(--w-public);
+}
+
+.footer {
+  position: relative;
+  z-index: 1;
+  background: var(--ink);
+  color: #fff;
+  padding: var(--space-4) var(--space-5);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.decorHalftone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(213, 0, 50, 0.16) 1.4px, transparent 1.9px) 0 0 / 10px 10px;
+  -webkit-mask-image: linear-gradient(135deg, #000, transparent 55%);
+  mask-image: linear-gradient(135deg, #000, transparent 55%);
+}
+
+@media (max-width: 700px) {
+  .top {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .navSlot {
+    width: 100%;
+    margin-left: 0;
+  }
+}

@@ -1,0 +1,208 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.intake {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: var(--border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--amber-wash);
+  box-shadow: var(--shadow);
+}
+
+.intakeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 260px;
+  flex: 1 1 380px;
+}
+
+.intakeTitle {
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.intakeText {
+  font-size: 14px;
+}
+
+.intakeState {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.filterToggle {
+  display: inline-flex;
+  border: var(--border) solid var(--ink);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.filterButton {
+  padding: 10px 16px;
+  border: none;
+  background: var(--paper);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filterButton + .filterButton {
+  border-left: var(--border) solid var(--ink);
+}
+
+.filterButton[aria-pressed="true"] {
+  background: var(--red);
+  color: var(--paper);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tableCaption {
+  text-align: left;
+  font-size: 13px;
+  color: var(--ink);
+  opacity: 0.75;
+  padding-bottom: var(--space-2);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: var(--border) solid var(--ink);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--ink);
+  font-size: 14px;
+  vertical-align: top;
+}
+
+.table thead th {
+  background: var(--light);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.nameCell {
+  min-width: 240px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.icon {
+  flex: none;
+}
+
+.name {
+  display: block;
+  font-weight: 800;
+}
+
+.slug {
+  display: block;
+  font-family: monospace;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.actionsCell {
+  width: 1%;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: var(--border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--paper);
+  font: inherit;
+}
+
+.slugRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-4);
+}
+
+.slugRow > :global(.field) {
+  flex: 1 1 260px;
+}
+
+.slugInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: var(--border) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--paper);
+  font: inherit;
+  font-family: monospace;
+}
+
+.iconPreview {
+  flex: none;
+  border: var(--border-sm) solid var(--ink);
+  border-radius: var(--r);
+  background: var(--paper);
+  padding: 4px;
+}

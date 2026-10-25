@@ -1,0 +1,95 @@
+name: ochakovo-candidates
+x-app-env: &app-env
+  APP_ENV: production
+  DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://ochakovo:CHANGE_ME@db:5432/ochakovo_candidates}
+  APP_ORIGIN: ${APP_ORIGIN:-https://ochakovo.komolov.synology.me}
+  COOKIE_SECURE: ${COOKIE_SECURE:-true}
+  SUBMISSION_HMAC_SECRET: ${SUBMISSION_HMAC_SECRET:-}
+  TZ: ${TZ:-Europe/Moscow}
+services:
+  db:
+    image: ${DB_IMAGE:-postgres:17}
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ochakovo_candidates}
+      POSTGRES_USER: ${POSTGRES_USER:-ochakovo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME}
+      TZ: ${TZ:-Europe/Moscow}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  migrate:
+    image: 192.168.1.47:7002/ochakovo-candidates-api:${IMAGE_TAG:-UNRELEASED}
+    restart: "no"
+    mem_limit: 256m
+    command: [alembic, upgrade, head]
+    environment: *app-env
+    networks: [internal]
+    depends_on:
+      db: {condition: service_healthy}
+  api:
+    image: 192.168.1.47:7002/ochakovo-candidates-api:${IMAGE_TAG:-UNRELEASED}
+    restart: unless-stopped
+    mem_limit: 512m
+    environment: *app-env
+    networks: [internal, edge]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health/live', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  web:
+    image: 192.168.1.47:7002/ochakovo-candidates-web:${IMAGE_TAG:-UNRELEASED}
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      ENABLE_HSTS: ${ENABLE_HSTS:-0}
+    ports: ["${INGRESS_PORT:-18120}:8080"]
+    networks: [edge]
+    depends_on:
+      api: {condition: service_healthy}
+  maintenance:
+    image: 192.168.1.47:7002/ochakovo-candidates-api:${IMAGE_TAG:-UNRELEASED}
+    profiles: [maintenance]
+    restart: unless-stopped
+    mem_limit: 256m
+    command: [bash, /opt/maintenance/entrypoint.sh]
+    healthcheck: {disable: true}
+    environment:
+      <<: *app-env
+      PGHOST: db
+      PGPORT: '5432'
+      PGUSER: ${POSTGRES_USER:-ochakovo}
+      PGDATABASE: ${POSTGRES_DB:-ochakovo_candidates}
+      PRODUCTION_DB_NAME: ${POSTGRES_DB:-ochakovo_candidates}
+      PGPASSFILE: /run/secrets/pgpass
+      BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:-}
+      BACKUP_AGE_KEY_FILE: /run/secrets/age-identity
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - ./maintenance:/opt/maintenance:ro
+      - type: bind
+        source: ./backups
+        target: /backups
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${PGPASS_HOST_FILE:-./secrets/pgpass}
+        target: /run/secrets/pgpass
+        read_only: true
+        bind: {create_host_path: false}
+    networks: [internal]
+    depends_on:
+      db: {condition: service_healthy}
+volumes:
+  pgdata:
+    name: ochakovo-candidates_pgdata
+networks:
+  internal: {internal: true}
+  edge: {}

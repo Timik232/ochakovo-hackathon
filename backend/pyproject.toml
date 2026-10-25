@@ -1,0 +1,58 @@
+[project]
+name = "ochakovo-candidates-backend"
+version = "0.1.0"
+description = "Очаково: система учёта кандидатов — backend API"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "alembic>=1.14,<2",
+    "argon2-cffi>=25.1.0",
+    "email-validator>=2.3.0",
+    "fastapi>=0.115,<1",
+    "phonenumbers>=9,<10",
+    "psycopg[binary]>=3.2,<4",
+    "pydantic>=2.9,<3",
+    "pydantic-settings>=2.6,<3",
+    "sqlalchemy>=2.0.36,<2.1",
+    "uvicorn>=0.32,<1",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28,<1",
+    "mypy>=1.13,<2",
+    "pytest>=8.3,<10",
+    "ruff>=0.8",
+]
+
+[tool.uv]
+package = false
+
+# uv НЕ читает pip.conf — индекс devpi задаётся явно.
+[[tool.uv.index]]
+url = "http://192.168.1.48:3141/root/pypi/+simple/"
+default = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP", "W", "C4", "SIM", "RUF"]
+ignore = [
+    "RUF001", # русские подписи в строках — кириллические омоглифы ожидаемы
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
